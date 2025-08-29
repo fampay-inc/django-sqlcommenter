@@ -14,7 +14,8 @@ DJANGO_SQL_COMMENTER_METRIC = Counter(
         "project",
         "controller",
         "route",
-        "app_name"
+        "app_name",
+        "query_method"
     ]
 )
 
@@ -31,6 +32,8 @@ class QueryWrapper:
         controller = resolver_match.view_name if resolver_match else "none"
         route = getattr(resolver_match, "route", "none") if resolver_match else "none"
         app_name = (resolver_match.app_name or "none") if resolver_match else "none"
+        
+        query_method = sql.strip().split(" ", 1)[0].upper()
 
         sql = add_sql_comment(
             sql,
@@ -38,5 +41,5 @@ class QueryWrapper:
             route=route,
             app_name=app_name,
         )
-        DJANGO_SQL_COMMENTER_METRIC.labels(project=project, controller=controller, route=route, app_name=app_name).inc()
+        DJANGO_SQL_COMMENTER_METRIC.labels(project=project, controller=controller, route=route, app_name=app_name, query_method=query_method).inc()
         return execute(sql, params, many, context)
